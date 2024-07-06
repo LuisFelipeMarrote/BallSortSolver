@@ -3,9 +3,34 @@
 
 using namespace std;
 
-#define tamanhoProveta 5
+int heuristica(list<int> provetas[], int numeroProvetas, int tamanhoProveta){
+    int total = 0;
+    for (int i = 0; i < numeroProvetas; i++)
+    {
+        for (list<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
+        {
+            
+        }
+    }
+}
 
-void print(list<int> provetas[], int numeroProvetas)
+bool isOver(list<int> provetas[], int numeroProvetas, int tamanhoProveta){
+    for (int i = 0; i < numeroProvetas; i++)
+    {
+        if (provetas[i].size() != tamanhoProveta){
+            return false;
+        }
+        list<int>::iterator base = provetas[i].begin();
+        for (list<int>::iterator it = base++; it != provetas[i].end(); ++it)
+        {
+            if(*base != *it)
+                return false;
+        }
+    }
+    return true;
+}
+
+void print(list<int> provetas[], int numeroProvetas, int tamanhoProveta)
 {
     for (int i = 0; i < numeroProvetas; i++)
     {
@@ -17,7 +42,7 @@ void print(list<int> provetas[], int numeroProvetas)
     }
 }
 
-void inicializar(list<int> provetas[], int numeroProvetas)
+void inicializar(list<int> provetas[], int numeroProvetas, int tamanhoProveta)
 {
     int aux;
     int quantidade=0;
@@ -38,12 +63,20 @@ void inicializar(list<int> provetas[], int numeroProvetas)
 
 int main ()
 {
+    int tamanhoProveta = 5;
+    int numeroProvetas;
+    
     cout << "Quantas provetas serão: ";
-    int numeroProvetas; 
     cin >> numeroProvetas;
+    
+    //cout << "Quantas bolas por proveta serão(min:2): ";
+    //cin >> tamanhoProveta;
+    
     list<int> provetas[numeroProvetas];
-    inicializar(provetas, numeroProvetas);
-    print(provetas, numeroProvetas);
+    
+    inicializar(provetas, numeroProvetas, tamanhoProveta);
+    print(provetas, numeroProvetas, tamanhoProveta);
+    cout << isOver(provetas, numeroProvetas, tamanhoProveta);
     return 0;
 }
 
