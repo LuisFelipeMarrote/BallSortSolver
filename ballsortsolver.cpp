@@ -1,20 +1,65 @@
 #include <iostream>
 #include <list>
+#include <cmath>
 
 using namespace std;
 
-int heuristica(list<int> provetas[], int numeroProvetas, int tamanhoProveta){
+struct node
+{
+    int valor;
+    int profundidade;
+};
+
+
+
+int heuristica(list<int> provetas[], int numeroProvetas, int tamanhoProveta)
+{
     int total = 0;
     for (int i = 0; i < numeroProvetas; i++)
     {
-        for (list<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
+        list<int>::iterator base = provetas[i].begin();
+        int aux = *base;
+        for (list<int>::iterator it = base++; it != provetas[i].end(); ++it)
         {
-            
+            total = total + abs(aux - *it);
+        }
+    }
+    return total;
+}
+
+void jogadasPossiveisInicio(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas)
+{
+    for (int i = 0; i < numeroProvetas; i++)
+    {
+        if(provetas[i].empty() == true)
+        {
+            for (int j = 0; j < tamanhoProveta; j++)
+            {
+                jogadasPermitidas[i][j] = 1;                
+            }
+        }
+        for (int j = 0; j < numeroProvetas; j++)
+        {
+            if(provetas[i].back() == provetas[j].back() && i != j && provetas[j].size() != tamanhoProveta)
+                jogadasPermitidas[i][j] = 1;
         }
     }
 }
 
-bool isOver(list<int> provetas[], int numeroProvetas, int tamanhoProveta){
+void PrintjogadasPossiveisInicio(int numeroProvetas, int **jogadasPermitidas)
+{
+    for (int i = 0; i < numeroProvetas; i++)
+    {
+        for (int j = 0; j < numeroProvetas; j++)
+        {
+            cout << jogadasPermitidas[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+bool isOver(list<int> provetas[], int numeroProvetas, int tamanhoProveta)
+{
     for (int i = 0; i < numeroProvetas; i++)
     {
         if (provetas[i].size() != tamanhoProveta){
@@ -71,12 +116,18 @@ int main ()
     
     //cout << "Quantas bolas por proveta serão(min:2): ";
     //cin >> tamanhoProveta;
-    
+
+    int** jogadasPermitidas = (int**)malloc(numeroProvetas*sizeof(int*));
+    for (int i = 0; i < numeroProvetas; i++)
+        jogadasPermitidas[i] = (int*)malloc(numeroProvetas*sizeof(int));
+
     list<int> provetas[numeroProvetas];
-    
+
     inicializar(provetas, numeroProvetas, tamanhoProveta);
     print(provetas, numeroProvetas, tamanhoProveta);
-    cout << isOver(provetas, numeroProvetas, tamanhoProveta);
+    cout << isOver(provetas, numeroProvetas, tamanhoProveta) << endl;
+    jogadasPossiveisInicio(provetas, numeroProvetas, tamanhoProveta, jogadasPermitidas);
+    PrintjogadasPossiveisInicio(numeroProvetas, (int**)jogadasPermitidas);
     return 0;
 }
 
