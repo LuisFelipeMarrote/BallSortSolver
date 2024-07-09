@@ -4,10 +4,12 @@
 
 using namespace std;
 
-struct node
+struct jogada
 {
-    int valor;
-    int profundidade;
+    int origem;
+    int alvo;
+    int corOrigem; // 0 é vazio outro natural positivo é uma cor
+    int corAlvo; // 0 é vazio outro natural positivo é uma cor
 };
 
 
@@ -41,70 +43,119 @@ void jogadasPossiveisInicio(list<int> provetas[], int numeroProvetas, int tamanh
                 jogadasPermitidas[j][i] = 1;                
             }
             jogadasPermitidas[i][i] = 0;
-        }
-        for (int j = 0; j < numeroProvetas; j++)
+        } 
+        else 
         {
-            if(provetas[i].back() == provetas[j].back() && i != j && provetas[j].size() != tamanhoProveta)
-                jogadasPermitidas[j][i] = 1;
+            for (int j = 0; j < numeroProvetas; j++)
+            {
+                if(provetas[i].back() == provetas[j].back() && i != j && provetas[j].size() != tamanhoProveta)
+                    jogadasPermitidas[i][j] = 1;
+                else 
+                    jogadasPermitidas[i][j] = 0;                
+            }
         }
     }
 }
-// jogada é um array com 2 valores i e j ([i,j]), a bola de i vai para j;
+
 // funçao para a atualizar aas jogdas permitidas  
 // talvez seja interessante pensar depois numa estrutura que nao considere os tubos ja feitos
-void jogadasPossiveisMID(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas, int jogada[])
-{    
-    if(provetas[jogada[0]].back() != provetas[jogada[1]].back())
+void jogadasPossiveisMID(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas, jogada *jogada)
+{      
+    // primeiro vou cobrir a proveta alvo
+    // caso se a proveta alvo ficar cheia
+    if(provetas[jogada->alvo].size() == tamanhoProveta)
     {
         for (int j = 0; j < numeroProvetas; j++)
         {
-            if(provetas[j].back() == provetas[jogada[0]].back() && j != jogada[0])
+            jogadasPermitidas[j][jogada->alvo] = 0;
+        }
+    }
+    // caso se a proveta alvo estava vazia
+    else if (provetas[jogada->alvo].back() != jogada->corAlvo)
+    {
+        for (int j = 0; j < numeroProvetas; j++)
+        {
+            if(provetas[j].back() == provetas[jogada->alvo].back())
             {
+                jogadasPermitidas[j][jogada->alvo] = 1;
                 if(provetas[j].size() != tamanhoProveta)
                 {
-                    jogadasPermitidas[jogada[0]][j] = 1;    
-                    jogadasPermitidas[j][jogada[0]] = 1;
+                    jogadasPermitidas[jogada->alvo][j] = 1;                    
                 }
-                else
+                else    
                 {
-                    jogadasPermitidas[j][jogada[0]] = 1;  
+                    jogadasPermitidas[jogada->alvo][j] = 0;                    
                 }
             }
             else
             {
-                jogadasPermitidas[jogada[0]][j] = 0;
-                jogadasPermitidas[j][jogada[0]] = 0;  
+                jogadasPermitidas[j][jogada->alvo] = 0;
             }
         }
-
-    }
-
-    // atualiza jogadasPermitidas se a proveta alvo da mudança encha com a mudança 
-    if(provetas[jogada[1]].size() == tamanhoProveta)
+        jogadasPermitidas[jogada->alvo][jogada->alvo] = 0;
+    } 
+    // com a certeza que a proveta alvo esta correta, agora vou fazer a proveta origem 
+    // caso se a proveta origem ficar vazia
+    if(provetas[jogada->origem].empty() == true)
     {
         for (int j = 0; j < numeroProvetas; j++)
         {
-            jogadasPermitidas[j][jogada[1]] == 0;
+            jogadasPermitidas[jogada->origem][j] = 0;   
+            jogadasPermitidas[j][jogada->origem] = 1;             
         }
     }
-
-    // atualiza jogadasPermitidas se a proveta origem da mudança esvazie com a mudança
-    if(provetas[jogada[0]].empty() == true)
+    // caso nao fique vazia e a bola mude de cor 
+    else if (provetas[jogada->origem].back() != jogada->corOrigem)
     {
         for (int j = 0; j < numeroProvetas; j++)
         {
-            jogadasPermitidas[jogada[0]][j] = 0;   
-            jogadasPermitidas[j][jogada[0]] = 1;             
+            if(provetas[j].back() == provetas[jogada->origem].back())
+            {
+                jogadasPermitidas[j][jogada->origem] = 1;
+                if(provetas[j].size() != tamanhoProveta)
+                {
+                    jogadasPermitidas[jogada->origem][j] = 1;
+                }
+                else
+                {
+                    jogadasPermitidas[jogada->origem][j] = 0;                    
+                }
+            }
+            else
+            {
+                jogadasPermitidas[j][jogada->origem] = 0;
+            }
         }
-        jogadasPermitidas[jogada[0]][jogada[0]] = 0;
+        // mais facil fazer uma substituiçao do que colocar mais condiçoes nos if's.
     }
+    // caso a proveta estava cheia 
+    else if (provetas[jogada->origem].size() == tamanhoProveta - 1)
+    {
+            for (int j = 0; j < numeroProvetas; j++)
+            {
+                if(provetas[jogada->origem].back() == provetas[j].back() && jogada->origem != j && provetas[j].size() != tamanhoProveta)
+                {
+                    jogadasPermitidas[j][jogada->origem] = 1;                    
+                }
+                else
+                {
+                    jogadasPermitidas[j][jogada->origem] = 0;                      
+                }
+            }
+    }
+    
+    jogadasPermitidas[jogada->origem][jogada->origem] = 0;
+
 }
 
-void jogou(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas, int jogada[])
+void jogou(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas, jogada *jogada)
 {
-    int aux = provetas[jogada[0]].back();
-    provetas[jogada[0]].pop_back();
-    provetas[jogada[1]].push_back(aux);
+    jogada->corOrigem = provetas[jogada->origem].back();
+    if(provetas[jogada->alvo].empty() == true)
+        jogada->corAlvo = 0;            
+    jogada->corAlvo = provetas[jogada->alvo].back();    
+    provetas[jogada->origem].pop_back();
+    provetas[jogada->alvo].push_back(jogada->corOrigem);
     jogadasPossiveisMID(provetas, numeroProvetas, tamanhoProveta, jogadasPermitidas, jogada);
 }
 
@@ -191,8 +242,8 @@ int main ()
     cout << isOver(provetas, numeroProvetas, tamanhoProveta) << endl;
     jogadasPossiveisInicio(provetas, numeroProvetas, tamanhoProveta, jogadasPermitidas);
     printjogadasPossiveis(numeroProvetas, jogadasPermitidas);     
-    int jogada[2] = {2,3};
-    jogou(provetas, numeroProvetas, tamanhoProveta, jogadasPermitidas, jogada);
+    jogada jogada = {2,3};
+    jogou(provetas, numeroProvetas, tamanhoProveta, jogadasPermitidas, &jogada);
     print(provetas, numeroProvetas, tamanhoProveta);
     printjogadasPossiveis(numeroProvetas, jogadasPermitidas);     
     free(jogadasPermitidas);
