@@ -105,7 +105,7 @@ void jogadasPossiveisMID(list<int> provetas[], int numeroProvetas, int tamanhoPr
         }
     }
     // caso nao fique vazia e a bola mude de cor 
-    else if (provetas[jogada->origem].back() != jogada->corOrigem)
+    else if (provetas[jogada->origem].back() != jogada->corOrigem && provetas[jogada->origem].size() == tamanhoProveta - 1)
     {
         for (int j = 0; j < numeroProvetas; j++)
         {
@@ -126,7 +126,7 @@ void jogadasPossiveisMID(list<int> provetas[], int numeroProvetas, int tamanhoPr
                 jogadasPermitidas[j][jogada->origem] = 0;
             }
         }
-        // mais facil fazer uma substituiçao do que colocar mais condiçoes nos if's.
+
     }
     // caso a proveta estava cheia 
     else if (provetas[jogada->origem].size() == tamanhoProveta - 1)
@@ -142,10 +142,9 @@ void jogadasPossiveisMID(list<int> provetas[], int numeroProvetas, int tamanhoPr
                     jogadasPermitidas[j][jogada->origem] = 0;                      
                 }
             }
-    }
-    
+    }       
+    // mais facil fazer uma substituiçao do que colocar mais condiçoes nos if's.
     jogadasPermitidas[jogada->origem][jogada->origem] = 0;
-
 }
 
 void jogou(list<int> provetas[], int numeroProvetas, int tamanhoProveta, int **jogadasPermitidas, jogada *jogada)
@@ -219,6 +218,17 @@ void inicializar(list<int> provetas[], int numeroProvetas, int tamanhoProveta)
     }
 }
 
+// void escolherJogada()
+// {
+
+// }
+
+// void arvore()
+// {
+
+// }
+
+// falta implementar como se escolhe a jogada e a arvore. mas nao falta mt
 int main ()
 {
     int tamanhoProveta = 5;
