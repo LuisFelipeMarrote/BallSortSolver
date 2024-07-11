@@ -1,31 +1,22 @@
+//-------------------------------------------------------------------------//
+// tenho que mudar o metodo escolher_jogada para fazer ser randomico.
+// criar uma lista com todos os tabuleiros que ja cheguei e evitar que eles 
+// ocorram de novo.
+// posso fazer a implementação de uma priority queue depois
+//-------------------------------------------------------------------------//
+
 #include <iostream>
 #include <list>
 #include <vector>
 #include <map>
 #include "jogadas_permitidas_c.h"
+#include <queue>
 
 using namespace std;
 
 int const tamanho_proveta = 5;
 
-struct node
-{
-    list<int> provetas[tamanho_proveta];
-    jogadas_permitas_c jp;
-    node *prev = 0;
-    int depth = 0;
-
-    void construc(list<int> provetas_aux[tamanho_proveta], jogadas_permitas_c jp_aux, node *prev, int depth, int numero_provetas)
-    {
-        for(int i = 0; i < numero_provetas; i++)
-            std::copy(provetas_aux[i].begin(),provetas_aux[i].end(),std::back_inserter(provetas[i]));
-        jp.numero_provetas = numero_provetas;
-        *prev = *prev;
-        depth = depth;
-    }
-};
-
-
+void printjogadasPossiveis(int numero_provetas, jogadas_permitas_c *jp);
 
 struct jogada
 {
@@ -33,22 +24,60 @@ struct jogada
     int alvo;
     int corOrigem; // 0 é vazio outro natural positivo é uma cor
     int corAlvo; // 0 é vazio outro natural positivo é uma cor
+    
+    jogada(int i, int j)
+    {
+        origem = i;        
+        alvo = j;        
+    }
 };
+
+struct node
+{
+    list<int> provetas[tamanho_proveta];\
+    list<jogada> jogadas {};
+    jogadas_permitas_c jp;
+    node *prev = 0;
+    int depth = 0; // nao preciso necessariamente posso usar o jogadas.size(), mas vou deixar por enquanto
+
+    node(list<int> provetas_aux[tamanho_proveta], jogadas_permitas_c jp_aux, node *prev, int depth, int numero_provetas)
+    {
+        for(int i = 0; i < numero_provetas; i++)
+            std::copy(provetas_aux[i].begin(),provetas_aux[i].end(),std::back_inserter(provetas[i]));
+        jp.jogadas_permitidas = jp_aux.jogadas_permitidas;
+        this->prev = prev;
+        this->depth = depth;
+    }
+
+    node(list<int> provetas_aux[tamanho_proveta], jogadas_permitas_c jp_aux, node *prev, int depth, int numero_provetas, jogada jogada)
+    {
+        for(int i = 0; i < numero_provetas; i++)
+            std::copy(provetas_aux[i].begin(),provetas_aux[i].end(),std::back_inserter(provetas[i]));
+        jp.jogadas_permitidas = jp_aux.jogadas_permitidas;
+        this->prev = prev;
+        this->depth = depth;
+        this->jogadas.push_back(jogada);
+    }
+};
+
+// armazenas as futuras jogadas na ordem em que eu vou tirar baseado no valor
+std::multimap<int, node> guarda_nodes;
+std::vector<node> nodes_vistados;
 
 
 // acho que a heuristica tem que levar em conta a profundidade da ultima bola comparada a do topo,
 // quantidades de bolas de cores diferentes e a posicao das bolas de outras cores.
-int heuristica(list<int> provetas[], int numero_provetas)
+int heuristica(node *no, int numero_provetas)
 {
     int total = 0;
     for (int i = 0; i < numero_provetas; i++)
     {
-        list<int>::iterator base = provetas[i].begin();
+        list<int>::iterator base = no->provetas[i].begin();
         int aux = *base;
         int j = 1;
-        for (list<int>::iterator it = provetas[i].end(); it != provetas[i].begin(); --it)
+        for (list<int>::iterator it = no->provetas[i].end(); it != no->provetas[i].begin(); --it)
         {
-            //total = total + abs(aux - *it)*j;
+            total = total + abs(aux - *it)*j;
             j++;
         }
     }
@@ -171,6 +200,7 @@ void jogadasPossiveisMID(list<int> provetas[], int numero_provetas, jogadas_perm
     jp->jogadas_permitidas[jogada->origem][jogada->origem] = 0;
 }
 
+//Muda o tabuleiro e chama a funçao jogadas possiveis mid para atualizar a tabela de jogadas possiveis
 void jogou(list<int> provetas[], int numero_provetas, jogadas_permitas_c *jp, jogada *jogada)
 {
     jogada->corOrigem = provetas[jogada->origem].back();
@@ -206,25 +236,29 @@ void print(list<int> provetas[], int numero_provetas)
     }
 }
 
+//confere se o jogo acabou
+// checa se todos as provetas estao preenchidas e com o mesmo numero
 bool isOver(list<int> provetas[], int numero_provetas)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
-        if (provetas[i].size() != tamanho_proveta){
-            return false;
-        }
         list<int>::iterator base = provetas[i].begin();
-        for (list<int>::iterator it = base++; it != provetas[i].end(); ++it)
-        {
+        for (list<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
+        { 
             if(*base != *it)
+            {
+                cout << "não achei o resultado" << endl;
                 return false;
-        }
+            }
+        }   
+
     }
+    cout << "achei o resultado" << endl;
     return true;
 }
 
 
-
+//inicializa as provetas
 void inicializar(list<int> provetas[], int numero_provetas)
 {
     int aux;
@@ -241,18 +275,56 @@ void inicializar(list<int> provetas[], int numero_provetas)
     }
 }
 
-// void cria_node(list<int> provetas[], jogadas_permitas_c *jp, node *prev, int numero_provetas)
-// {
-//     struct node no;
-//     no.construc(provetas, *jp, prev, prev->depth, numero_provetas);
-//     print(no.provetas, numero_provetas);
-//     printjogadasPossiveis(numero_provetas, &(no.jp));
-// }
+// feito com sucesso, posso mudar o parametro para passar so o node e o numero de provetas
+void cria_filhos(list<int> provetas[], jogadas_permitas_c *jp, node *no, int numero_provetas)
+{
+    for (int i = 0; i < numero_provetas; i++)
+    {
+        for (int j = 0; j < tamanho_proveta; j++)
+        {
+            if(jp->jogadas_permitidas[i][j] == 1)
+            {
+                struct jogada jogada(i,j);
+                struct node noNew (provetas, *jp, no, no->depth + 1, numero_provetas);
+                jogou(noNew.provetas, numero_provetas, &(noNew.jp), &jogada);
+                
+                guarda_nodes.insert(std::pair<int, node>(heuristica(&noNew, numero_provetas) + noNew.depth, noNew));
+            }
+        }        
+    }
+}
 
-// void arvore()
-// {
+// mudar depois para passar a sequencia de jogadas feita
+vector<node> solucao_caminho(node *no)
+{
+    cout << "entrei" <<endl;
+    vector<node> caminho;
+    while(no->prev != 0)
+    {
+        caminho.push_back(*no);
+        no = no->prev;
+    }
+    return caminho;
+}
 
-// }
+vector<node> resolver(int numero_provetas)
+{
+    std::multimap<int,node>::iterator it=guarda_nodes.begin();
+    printjogadasPossiveis(numero_provetas, &it->second.jp);
+    while(isOver(it->second.provetas, numero_provetas) == false)
+    {    
+        std::multimap<int,node>::iterator it=guarda_nodes.begin();
+        cria_filhos(it->second.provetas, &(it->second.jp), &(it->second), numero_provetas);
+    }
+    vector<node> caminho = solucao_caminho(&(it->second));        
+    return caminho;
+}
+
+bool no_ja_existe(node *no)
+{
+    for (std::multimap<int,node>::iterator it=guarda_nodes.begin(); it!=guarda_nodes.end(); ++it)
+        if(it->second.provetas);
+}
 
 // falta implementar como se escolhe a jogada e a arvore. mas nao falta mt
 int main ()
@@ -261,18 +333,17 @@ int main ()
     cout << "Quantas provetas serão: ";
     cin >> numero_provetas;
 
-    jogadas_permitas_c jp;
-
+    jogadas_permitas_c jp(numero_provetas);
     //mudar para char, pois nao tem diferença maior de uma bola da cor verde para uma de cor azul.
     list<int> provetas[numero_provetas];
-
-    struct node a;
-
-    //tenho que passar esses parametros como ponteiros
     inicializar(provetas, numero_provetas);
     jogadasPossiveisInicio(provetas, numero_provetas, &jp);
-    //cria_node(provetas, &jp, &a, numero_provetas);
     print(provetas, numero_provetas);
-    //printjogadasPossiveis(numero_provetas, &jp);     
+    printjogadasPossiveis(numero_provetas, &jp);
+    struct node no_inicial(provetas, jp, 0, 0, numero_provetas);
+    guarda_nodes.insert(std::pair<int, node>(heuristica(&no_inicial, numero_provetas) + no_inicial.depth, no_inicial));
+    cout<<"problema aqui definitvamente" <<endl;
+    vector<node> caminho = resolver(numero_provetas);
+    cout << caminho.size() << endl;
 }
 
