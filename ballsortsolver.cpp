@@ -10,12 +10,13 @@
 #include <vector>
 #include <map>
 #include "jogadas_permitidas_c.h"
+#include "stopwatch.h"
+
 
 using namespace std;
 
 int const tamanho_proveta = 4;
 
-void printjogadasPossiveis(int numero_provetas, jogadas_permitas_c *jp);
 
 struct jogada
 {
@@ -85,7 +86,7 @@ int heuristica(node *no, int numero_provetas)
     return total;
 }
 
-void jogadasPossiveisInicio(vector<list<int>> &provetas, int numero_provetas,  jogadas_permitas_c *jp)
+void jogadas_possiveis_inicio(vector<list<int>> &provetas, int numero_provetas,  jogadas_permitas_c *jp)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
@@ -213,11 +214,11 @@ void jogou(vector<list<int>> &provetas, int numero_provetas, jogadas_permitas_c 
     jogada->corAlvo = provetas[jogada->alvo].back();    
     provetas[jogada->origem].pop_back();
     provetas[jogada->alvo].push_back(jogada->corOrigem);
-    jogadasPossiveisInicio(provetas, numero_provetas, jp);
+    jogadas_possiveis_inicio(provetas, numero_provetas, jp);
     //jogadasPossiveisMID(provetas, numero_provetas, jp, jogada);
 }
 
-void printjogadasPossiveis(int numero_provetas, jogadas_permitas_c *jp)
+void print_jogadas_possiveis(int numero_provetas, jogadas_permitas_c *jp)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
@@ -243,7 +244,7 @@ void print(vector<list<int>> &provetas, int numero_provetas)
 
 // confere se o jogo acabou
 // checa se todos as provetas estao preenchidas e com o mesmo numero
-bool isOver(vector<list<int>> &provetas, int numero_provetas)
+bool is_over(vector<list<int>> &provetas, int numero_provetas)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
@@ -331,44 +332,52 @@ list<jogada> resolver(int numero_provetas)
 {
     std::multimap<int,node>::iterator it=guarda_nodes.end();
     it--;
-    int i = 0;
-    while (isOver(it->second.provetas, numero_provetas) == false && guarda_nodes.empty() == false)
-    {           
-        i++;
+    while (is_over(it->second.provetas, numero_provetas) == false)
+    {               
         cria_filhos(it->second.provetas, &(it->second.jp), &(it->second), numero_provetas);
         nodes_vistados.push_back(it->second);
-        guarda_nodes.erase (it);   
+        guarda_nodes.erase (it); 
+        if(guarda_nodes.empty() == true)
+        {
+            list<jogada> vazio = {};        
+            return vazio;
+        }  
         it=guarda_nodes.end(); 
-        it--;
+        it--;   
     }
     return it->second.jogadas;
 }
 
 void print_caminho(list<jogada> caminho){
     if(caminho.empty() == true)
-        cout<< "deu mt merda";
-    for (std::list<jogada>::iterator it=caminho.begin(); it != caminho.end(); ++it)
-    {   
-        cout << "Coloque a bola do tubo " << it->origem + 1 << " no tubo " << it->alvo + 1<< endl;
-    }   
+        cout<< "Não há solução";
+    else
+    {
+        for (std::list<jogada>::iterator it=caminho.begin(); it != caminho.end(); ++it)
+        {   
+            cout << "Coloque a bola do tubo " << it->origem + 1 << " no tubo " << it->alvo + 1<< endl;
+        }    
+    }
 }
 
 // falta implementar como se escolhe a jogada e a arvore. mas nao falta mt
 int main ()
 {
+
     int numero_provetas;
     cout << "Quantas provetas serão: ";
     cin >> numero_provetas;
-
+    stopwatch<> sw;    
     jogadas_permitas_c jp(numero_provetas);
     //mudar para char, pois nao tem diferença maior de uma bola da cor verde para uma de cor azul.
     vector<list<int>> provetas(numero_provetas);
     inicializar(provetas, numero_provetas);
-    jogadasPossiveisInicio(provetas, numero_provetas, &jp);
+    jogadas_possiveis_inicio(provetas, numero_provetas, &jp);
     struct node no_inicial(provetas, jp, 0, numero_provetas);
     nodes_vistados.push_back(no_inicial);
     guarda_nodes.insert(std::pair<int, node>(heuristica(&no_inicial, numero_provetas) - no_inicial.depth, no_inicial));
     list<jogada> caminho = resolver(numero_provetas);
+    std::cout << "Elapsed: " << duration_cast<double>(sw.elapsed()) << '\n';    
     print_caminho(caminho);
 }
 
