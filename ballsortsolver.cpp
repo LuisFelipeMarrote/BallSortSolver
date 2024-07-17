@@ -12,11 +12,9 @@
 #include "jogadas_permitidas_c.h"
 #include "stopwatch.h"
 
-
 using namespace std;
 
 int const tamanho_proveta = 4;
-
 
 struct jogada
 {
@@ -34,22 +32,20 @@ struct jogada
 
 struct node
 {
-    vector<list<int>> provetas;
-    list<jogada> jogadas;
+    vector<vector<int>> provetas;
+    list<jogada> jogadas {};
     jogadas_permitas_c jp;
     int depth = 0; // nao preciso necessariamente posso usar o jogadas.size(), mas vou deixar por enquanto
 
-    node(vector<list<int>> provetas_aux, jogadas_permitas_c jp_aux, int depth, int numero_provetas)
+    node(vector<vector<int>> provetas_aux, jogadas_permitas_c jp_aux, int numero_provetas)
     {
         provetas.resize(numero_provetas);
         for(int i = 0; i < numero_provetas; i++)
             std::copy(provetas_aux[i].begin(),provetas_aux[i].end(),std::back_inserter(provetas[i]));
         jp.jogadas_permitidas = jp_aux.jogadas_permitidas;
-        this->depth = depth;
-        this->jogadas = {};
     }
 
-    node(vector<list<int>> provetas_aux, jogadas_permitas_c jp_aux, int depth, int numero_provetas, jogada jogada, node *no)
+    node(int numero_provetas, jogada jogada, node *no)
     {
         provetas.resize(numero_provetas);
         for(int i = 0; i < numero_provetas; i++)
@@ -63,6 +59,7 @@ struct node
 
 // armazenas as futuras jogadas na ordem em que eu vou tirar baseado no valor
 std::multimap<int, node> guarda_nodes;
+// armazenas os cenarios que eu ja cheguei
 std::vector<node> nodes_vistados;
 
 
@@ -73,10 +70,10 @@ int heuristica(node *no, int numero_provetas)
     int total = 0;
     for (int i = 0; i < numero_provetas; i++)
     {
-        list<int>::iterator base = no->provetas[i].begin();
+        vector<int>::iterator base = no->provetas[i].begin();
         int aux = *base;
         int j = 1;
-        for (list<int>::iterator it = no->provetas[i].end(); it != no->provetas[i].begin(); --it)
+        for (vector<int>::iterator it = no->provetas[i].end(); it != no->provetas[i].begin(); --it)
         {
             if(*it == *base)
                 total = total + j;
@@ -86,7 +83,7 @@ int heuristica(node *no, int numero_provetas)
     return total;
 }
 
-void jogadas_possiveis_inicio(vector<list<int>> &provetas, int numero_provetas,  jogadas_permitas_c *jp)
+void jogadas_possiveis_inicio(vector<vector<int>> &provetas, int numero_provetas,  jogadas_permitas_c *jp)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
@@ -116,97 +113,103 @@ void jogadas_possiveis_inicio(vector<list<int>> &provetas, int numero_provetas, 
 }
 
 // funçao para a atualizar aas jogdas permitidas  
+// nao esta funcionando
 // talvez seja interessante pensar depois numa estrutura que nao considere os tubos ja feitos
-void jogadasPossiveisMID(vector<list<int>> &provetas, int numero_provetas, jogadas_permitas_c *jp, jogada *jogada)
-{      
-    // primeiro vou cobrir a proveta alvo
-    // caso se a proveta alvo ficar cheia
-    if(provetas[jogada->alvo].size() == tamanho_proveta)
-    {
-        for (int j = 0; j < numero_provetas; j++)
-        {
-            jp->jogadas_permitidas[j][jogada->alvo] = 0;
-        }
-    }
-    // caso se a proveta alvo estava vazia
-    else if (provetas[jogada->alvo].back() != jogada->corAlvo)
-    {
-        for (int j = 0; j < numero_provetas; j++)
-        {
-            if(provetas[j].back() == provetas[jogada->alvo].back())
-            {
-                jp->jogadas_permitidas[j][jogada->alvo] = 1;
-                if(provetas[j].size() != tamanho_proveta)
-                {
-                    jp->jogadas_permitidas[jogada->alvo][j] = 1;                    
-                }
-                else    
-                {
-                    jp->jogadas_permitidas[jogada->alvo][j] = 0;                    
-                }
-            }
-            else
-            {
-                jp->jogadas_permitidas[j][jogada->alvo] = 0;
-            }
-        }
-        jp->jogadas_permitidas[jogada->alvo][jogada->alvo] = 0;
-    } 
-    // com a certeza que a proveta alvo esta correta, agora vou fazer a proveta origem 
-    // caso se a proveta origem ficar vazia
-    if(provetas[jogada->origem].empty() == true)
-    {
-        for (int j = 0; j < numero_provetas; j++)
-        {
-            jp->jogadas_permitidas[jogada->origem][j] = 0;   
-            jp->jogadas_permitidas[j][jogada->origem] = 1;             
-        }
-    }
-    // caso nao fique vazia e a bola mude de cor 
-    else if (provetas[jogada->origem].back() != jogada->corOrigem && provetas[jogada->origem].size() == tamanho_proveta - 1)
-    {
-        for (int j = 0; j < numero_provetas; j++)
-        {
-            if(provetas[j].back() == provetas[jogada->origem].back())
-            {
-                jp->jogadas_permitidas[j][jogada->origem] = 1;
-                if(provetas[j].size() != tamanho_proveta)
-                {
-                    jp->jogadas_permitidas[jogada->origem][j] = 1;
-                }
-                else
-                {
-                    jp->jogadas_permitidas[jogada->origem][j] = 0;                    
-                }
-            }
-            else
-            {
-                jp->jogadas_permitidas[j][jogada->origem] = 0;
-            }
-        }
+// void jogadasPossiveisMID(vector<vector<int>> &provetas, int numero_provetas, jogadas_permitas_c *jp, jogada *jogada)
+// {      
+//     // primeiro vou cobrir a proveta alvo
+//     // caso se a proveta alvo ficar cheia
+//     if(provetas[jogada->alvo].size() == tamanho_proveta)
+//     {
+//         for (int j = 0; j < numero_provetas; j++)
+//         {
+//             jp->jogadas_permitidas[j][jogada->alvo] = 0;
+//         }
+//     }
+//     // caso se a proveta alvo estava vazia
+//     else if (provetas[jogada->alvo].back() != jogada->corAlvo)
+//     {
+//         for (int j = 0; j < numero_provetas; j++)
+//         {
+//             if(provetas[j].back() == provetas[jogada->alvo].back())
+//             {
+//                 jp->jogadas_permitidas[j][jogada->alvo] = 1;
+//                 if(provetas[j].size() != tamanho_proveta)
+//                 {
+//                     jp->jogadas_permitidas[jogada->alvo][j] = 1;                    
+//                 }
+//                 else    
+//                 {
+//                     jp->jogadas_permitidas[jogada->alvo][j] = 0;                    
+//                 }
+//             }
+//             else 
+//             {
+//                 jp->jogadas_permitidas[j][jogada->alvo] = 0;
+//             }
+//             if(provetas[j].empty())
+//             {   
+//                 jp->jogadas_permitidas[jogada->alvo][j] = 1;                
+//             }
+//         }
+//         jp->jogadas_permitidas[jogada->alvo][jogada->alvo] = 0;
+//     } 
+//     // com a certeza que a proveta alvo esta correta, agora vou fazer a proveta origem 
+//     // caso se a proveta origem ficar vazia
+//     if(provetas[jogada->origem].empty() == true)
+//     {
+//         for (int j = 0; j < numero_provetas; j++)
+//         {
+//             jp->jogadas_permitidas[jogada->origem][j] = 0;   
+//             if(provetas[j].empty() == false)
+//                 jp->jogadas_permitidas[j][jogada->origem] = 1;             
+//         }
+//     }
+//     // caso nao fique vazia e a bola mude de cor 
+//     else if (provetas[jogada->origem].back() != jogada->corOrigem && provetas[jogada->origem].size() == tamanho_proveta - 1)
+//     {
+//         for (int j = 0; j < numero_provetas; j++)
+//         {
+//             if(provetas[j].back() == provetas[jogada->origem].back())
+//             {
+//                 jp->jogadas_permitidas[j][jogada->origem] = 1;
+//                 if(provetas[j].size() != tamanho_proveta)
+//                 {
+//                     jp->jogadas_permitidas[jogada->origem][j] = 1;
+//                 }
+//                 else
+//                 {
+//                     jp->jogadas_permitidas[jogada->origem][j] = 0;                    
+//                 }
+//             }
+//             else
+//             {
+//                 jp->jogadas_permitidas[j][jogada->origem] = 0;
+//             }
+//         }
 
-    }
-    // caso a proveta estava cheia 
-    else if (provetas[jogada->origem].size() == tamanho_proveta - 1)
-    {
-            for (int j = 0; j < numero_provetas; j++)
-            {
-                if(provetas[jogada->origem].back() == provetas[j].back() && jogada->origem != j && provetas[j].size() != tamanho_proveta)
-                {
-                    jp->jogadas_permitidas[j][jogada->origem] = 1;                    
-                }
-                else
-                {
-                    jp->jogadas_permitidas[j][jogada->origem] = 0;                      
-                }
-            }
-    }       
-    // mais facil fazer uma substituiçao do que colocar mais condiçoes nos if's.
-    jp->jogadas_permitidas[jogada->origem][jogada->origem] = 0;
-}
+//     }
+//     // caso a proveta estava cheia 
+//     else if (provetas[jogada->origem].size() == tamanho_proveta - 1)
+//     {
+//             for (int j = 0; j < numero_provetas; j++)
+//             {
+//                 if(provetas[jogada->origem].back() == provetas[j].back() && jogada->origem != j && provetas[j].size() != tamanho_proveta)
+//                 {
+//                     jp->jogadas_permitidas[j][jogada->origem] = 1;                    
+//                 }
+//                 else
+//                 {
+//                     jp->jogadas_permitidas[j][jogada->origem] = 0;                      
+//                 }
+//             }
+//     }       
+//     // mais facil fazer uma substituiçao do que colocar mais condiçoes nos if's.
+//     jp->jogadas_permitidas[jogada->origem][jogada->origem] = 0;
+// }
 
 //Muda o tabuleiro e chama a funçao jogadas possiveis mid para atualizar a tabela de jogadas possiveis
-void jogou(vector<list<int>> &provetas, int numero_provetas, jogadas_permitas_c *jp, jogada *jogada)
+void jogou(vector<vector<int>> &provetas, int numero_provetas, jogadas_permitas_c *jp, jogada *jogada)
 {
     jogada->corOrigem = provetas[jogada->origem].back();
     if(provetas[jogada->alvo].empty() == true)
@@ -230,11 +233,11 @@ void print_jogadas_possiveis(int numero_provetas, jogadas_permitas_c *jp)
     }
 }
 
-void print(vector<list<int>> &provetas, int numero_provetas)
+void print(vector<vector<int>> &provetas, int numero_provetas)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
-        for (list<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
+        for (vector<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
         {
             cout << *it;
         }
@@ -244,14 +247,14 @@ void print(vector<list<int>> &provetas, int numero_provetas)
 
 // confere se o jogo acabou
 // checa se todos as provetas estao preenchidas e com o mesmo numero
-bool is_over(vector<list<int>> &provetas, int numero_provetas)
+bool is_over(vector<vector<int>> &provetas, int numero_provetas)
 {
     for (int i = 0; i < numero_provetas; i++)
     {
         if(provetas[i].size() == tamanho_proveta || provetas[i].empty() == true)
         {
-            list<int>::iterator base = provetas[i].begin();
-            for (list<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
+            vector<int>::iterator base = provetas[i].begin();
+            for (vector<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
             { 
                 if(*base != *it)
                 {
@@ -269,7 +272,7 @@ bool is_over(vector<list<int>> &provetas, int numero_provetas)
 
 
 //inicializa as provetas
-void inicializar(vector<list<int>> &provetas, int numero_provetas)
+void inicializar(vector<vector<int>> &provetas, int numero_provetas)
 {
     int aux;
     for (int i = 0; i < numero_provetas; i++)
@@ -307,7 +310,7 @@ bool no_ja_existe(node *no, int numero_provetas)
 }
 
 // feito com sucesso, posso mudar o parametro para passar so o node e o numero de provetas
-void cria_filhos(vector<list<int>> &provetas, jogadas_permitas_c *jp, node *no, int numero_provetas)
+void cria_filhos(vector<vector<int>> &provetas, jogadas_permitas_c *jp, node *no, int numero_provetas)
 {
     for (int h = 0; h < numero_provetas; h++)
     {
@@ -316,7 +319,7 @@ void cria_filhos(vector<list<int>> &provetas, jogadas_permitas_c *jp, node *no, 
             if(no->jp.jogadas_permitidas[h][k] == 1)
             {
                 struct jogada jogada(h,k);
-                struct node noNew (provetas, *jp, no->depth + 1, numero_provetas, jogada, no);
+                struct node noNew (numero_provetas, jogada, no);
                 jogou(noNew.provetas, numero_provetas, &(noNew.jp), &jogada);
                 if(no_ja_existe(&noNew, numero_provetas) == false)
                 {
@@ -345,6 +348,7 @@ list<jogada> resolver(int numero_provetas)
         it=guarda_nodes.end(); 
         it--;   
     }
+    print(it->second.provetas,numero_provetas);
     return it->second.jogadas;
 }
 
@@ -370,10 +374,10 @@ int main ()
     stopwatch<> sw;    
     jogadas_permitas_c jp(numero_provetas);
     //mudar para char, pois nao tem diferença maior de uma bola da cor verde para uma de cor azul.
-    vector<list<int>> provetas(numero_provetas);
+    vector<vector<int>> provetas(numero_provetas);
     inicializar(provetas, numero_provetas);
     jogadas_possiveis_inicio(provetas, numero_provetas, &jp);
-    struct node no_inicial(provetas, jp, 0, numero_provetas);
+    struct node no_inicial(provetas, jp, numero_provetas);
     nodes_vistados.push_back(no_inicial);
     guarda_nodes.insert(std::pair<int, node>(heuristica(&no_inicial, numero_provetas) - no_inicial.depth, no_inicial));
     list<jogada> caminho = resolver(numero_provetas);

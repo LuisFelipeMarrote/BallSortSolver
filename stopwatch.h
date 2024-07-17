@@ -2,6 +2,9 @@
 #include <iostream>
 
 template <typename Clock = std::chrono::steady_clock>
+
+#pragma once
+
 class stopwatch
 {
     typename Clock::time_point last_;
