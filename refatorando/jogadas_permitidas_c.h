@@ -4,8 +4,8 @@
 
 class jogadas_permitas_c
 {
-    public:
-        std::vector<std::vector<int>> jogadas_permitidas;
+public:
+    std::vector<std::vector<int>> jogadas_permitidas;
     jogadas_permitas_c(int numero_provetas)
     {        
         jogadas_permitidas.resize(numero_provetas);

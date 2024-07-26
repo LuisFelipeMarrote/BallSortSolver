@@ -11,8 +11,8 @@ class manual : public player
 //Funticions
 
 public:
-
     manual(int numero_provetas, int tamanho_proveta, vec_vec &provetas_aux);
+    manual(table table);
     player::jogada cria_jogada();
     bool checa_jogada(vec_vec &provetas, jogadas_permitas_c *jogadas_permitas, player::jogada jogada);
     bool continuar_jogando();

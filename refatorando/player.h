@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include "jogadas_permitidas_c.h"
+#include "table.h"
 
 typedef std::vector<std::vector<int>> vec_vec;
 

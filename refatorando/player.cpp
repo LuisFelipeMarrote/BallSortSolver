@@ -30,6 +30,7 @@ void player::print_jogadas_possiveis(jogadas_permitas_c *jp)
 
 void player::print(vec_vec &provetas)
 {
+    std::cout << "\n";
     for (int i = 0; i < numero_provetas; i++)
     {
         for (std::vector<int>::iterator it = provetas[i].begin(); it != provetas[i].end(); ++it)
@@ -38,6 +39,7 @@ void player::print(vec_vec &provetas)
         }
     std::cout << std::endl;
     }
+    std::cout << "\n";
 }
 
 void player::jogadas_possiveis_inicio(vec_vec &provetas, jogadas_permitas_c *jp)
@@ -60,7 +62,7 @@ void player::jogadas_possiveis_inicio(vec_vec &provetas, jogadas_permitas_c *jp)
         {
             for (int j = 0; j < numero_provetas; j++)
             {
-                if(provetas[i].back() == provetas[j].back() && i != j && provetas[j].size() != tamanho_proveta)
+                if(provetas[j].empty() == false && provetas[i].back() == provetas[j].back() && i != j && provetas[j].size() != tamanho_proveta)
                     jp->jogadas_permitidas[i][j] = 1;
                 else 
                     jp->jogadas_permitidas[i][j] = 0;                

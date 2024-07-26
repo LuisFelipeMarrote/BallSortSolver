@@ -21,7 +21,6 @@ private:
 //Funticions
 
 public:
-    table();
     table(int numero_provetas, int tamanho_proveta);
     table(int numero_provetas, int tamanho_proveta, vec_vec provetas);
     void create_table();

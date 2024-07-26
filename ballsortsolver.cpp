@@ -39,10 +39,10 @@ struct node
 
     node(vector<vector<int>> provetas_aux, jogadas_permitas_c jp_aux, int numero_provetas)
     {
-        provetas.resize(numero_provetas);
+        provetas.resize(numero_provetas);        
+        jp.jogadas_permitidas = jp_aux.jogadas_permitidas;
         for(int i = 0; i < numero_provetas; i++)
             std::copy(provetas_aux[i].begin(),provetas_aux[i].end(),std::back_inserter(provetas[i]));
-        jp.jogadas_permitidas = jp_aux.jogadas_permitidas;
     }
 
     node(int numero_provetas, jogada jogada, node *no)

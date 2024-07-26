@@ -1,9 +1,5 @@
 #include "table.h"
 
-table::table(){
-    std::cout << "oi";
-}
-
 table::table(int numero_provetas, int tamanho_proveta)
 {
     this->numero_provetas = numero_provetas;
@@ -13,13 +9,11 @@ table::table(int numero_provetas, int tamanho_proveta)
     create_table();
 }
 
-table::table(int numero_provetas, int tamanho_proveta, vec_vec provetas)
+table::table(int numero_provetas, int tamanho_proveta, vec_vec provetas_aux)
 {
     this->numero_provetas = numero_provetas;
     this->tamanho_proveta = tamanho_proveta;
-    this->provetas.resize(numero_provetas);        
-    for (int n = 0; n < this->numero_provetas; n++)
-        std::copy(provetas[n].begin(),provetas[n].end(),std::back_inserter(this->provetas[n]));    
+    this->provetas = provetas_aux;
 }
 
 void table::create_table()
