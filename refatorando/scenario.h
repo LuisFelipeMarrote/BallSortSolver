@@ -3,7 +3,7 @@
 
 #pragma once
 
-class scenario
+class Scenario
 {
 
 /****************************************************************/
@@ -18,7 +18,7 @@ private:
     int choose_table();    
     std::list<table>::iterator find_table(int table_escolhida);
 public:
-    scenario();
+    Scenario();
     void insert_new();
     void insert_table(table table);
     table random_game();

@@ -1,6 +1,6 @@
-#include "scenario.h"
+#include "Scenario.h"
 
-scenario::scenario()
+Scenario::Scenario()
 {
     //table(int numero_provetas, int tamanho_proveta, vec_vec provetas);
     table table1(3,4,{{1,1,1,1},{2,2,2},{2}});
@@ -11,7 +11,7 @@ scenario::scenario()
     tables.push_back(table3);
 }
 
-void scenario::insert_new()
+void Scenario::insert_new()
 {
     int tamanho_proveta = 0;
     int numero_provetas = 0;
@@ -23,12 +23,12 @@ void scenario::insert_new()
     tables.push_back(table);
 }
 
-void scenario::insert_table(table table)
+void Scenario::insert_table(table table)
 {
     tables.push_back(table);
 }
 
-table scenario::random_game()
+table Scenario::random_game()
 {
     int numero_provetas = 0;
     int tamanho_proveta = 0;
@@ -40,7 +40,7 @@ table scenario::random_game()
     return table;
 }
 
-void scenario::print_all()
+void Scenario::print_all()
 {
     int i = 0;
     for(std::list<table>::iterator it = tables.begin(); it != tables.end();++it)
@@ -52,7 +52,7 @@ void scenario::print_all()
     }
 }
 
-int scenario::choose_table()
+int Scenario::choose_table()
 {
     int table_escolhida;
     print_all();
@@ -61,7 +61,7 @@ int scenario::choose_table()
     return table_escolhida - 1;
 }
 
-std::list<table>::iterator scenario::find_table(int table_escolhida)
+std::list<table>::iterator Scenario::find_table(int table_escolhida)
 {        
     int i = 0;
     std::list<table>::iterator it = tables.begin(); 
@@ -74,14 +74,14 @@ std::list<table>::iterator scenario::find_table(int table_escolhida)
     return it;
 }
 
-table scenario::get_table()
+table Scenario::get_table()
 {
     int table_escolhida = choose_table();
     std::list<table>::iterator tables_aux = find_table(table_escolhida);
     return *tables_aux;
 }
 
-void scenario::delete_table()
+void Scenario::delete_table()
 {
     int table_escolhida = choose_table();
     std::list<table>::iterator tables_aux =  find_table(table_escolhida);

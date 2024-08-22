@@ -8,8 +8,7 @@ maquina::maquina(table table) : player::player(table.get_numero_provetas(), tabl
     player::jogadas_possiveis_inicio(provetas, &jogadas_permitas);
     struct node no(provetas, jogadas_permitas);
     guarda_nodes.insert(std::pair<int, node>(heuristica(&no) - no.depth, no));       
-    node *no_solucao = rodar_game();
-    print_caminho(no_solucao);
+    rodar_game();
 };
 
 int maquina::heuristica(node *no)
@@ -73,30 +72,6 @@ void maquina::cria_filhos(vec_vec &provetas, jogadas_permitas_c *jp, node *no)
     }
 }
 
-maquina::node* maquina::rodar_game()
-{
-    std::list<maquina::node>::iterator it_nv;
-    std::multimap<int,node>::iterator it_gn=guarda_nodes.end();
-    it_gn--;
-    while (is_over(it_gn->second.provetas) == false)
-    {          
-        nodes_vistados.push_back(it_gn->second);
-        guarda_nodes.erase(it_gn);      
-        it_nv = nodes_vistados.end();
-        it_nv--;
-        cria_filhos(it_nv->provetas, &(it_nv->jp), &(*it_nv));
-        if(guarda_nodes.empty() == true)
-        {        
-            node *no = nullptr;
-            return no;
-        }  
-        it_gn=guarda_nodes.end(); 
-        it_gn--;   
-    }
-
-    return &(it_gn->second);
-}
-
 void maquina::print_caminho(node* no){        
     std::stack<std::string> printer;
     if( no == nullptr)
@@ -124,4 +99,28 @@ void maquina::print_caminho(node* no){
             printer.pop();
         }
     }
+}
+
+void maquina::rodar_game()
+{
+    std::list<maquina::node>::iterator it_nv;
+    std::multimap<int,node>::iterator it_gn=guarda_nodes.end();
+    it_gn--;
+    while (is_over(it_gn->second.provetas) == false)
+    {          
+        nodes_vistados.push_back(it_gn->second);
+        guarda_nodes.erase(it_gn);      
+        it_nv = nodes_vistados.end();
+        it_nv--;
+        cria_filhos(it_nv->provetas, &(it_nv->jp), &(*it_nv));
+        if(guarda_nodes.empty() == true)
+        {        
+            node *no = nullptr;
+            print_caminho(no);
+            return;
+        }  
+        it_gn=guarda_nodes.end(); 
+        it_gn--;   
+    }
+    print_caminho(&(it_gn->second));
 }

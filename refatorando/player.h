@@ -40,7 +40,7 @@ private:
 /****************************************************************/
 //Funticions
 
-public:
+protected:
     //tenho que iniciar a função resolver aqui e passar as provetas como parametro
     player(int numero_provetas, int tamanho_proveta);
     void print_jogadas_possiveis(jogadas_permitas_c *jp);
@@ -53,4 +53,6 @@ public:
     // confere se o jogo acabou
     // checa se todos as provetas estao preenchidas e com o mesmo numero
     bool is_over(vec_vec &provetas);
+public:
+    virtual void rodar_game() = 0;
 };

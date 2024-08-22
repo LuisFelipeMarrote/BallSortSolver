@@ -54,6 +54,6 @@ public:
     int heuristica(node *no);
     bool no_ja_existe(node *no);
     void cria_filhos(vec_vec &provetas, jogadas_permitas_c *jp, node *no);
-    node* rodar_game();
-    void print_caminho(node* no);
+    void print_caminho(node* no);    
+    void rodar_game() override;
 };
